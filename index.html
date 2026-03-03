@@ -39,6 +39,50 @@
       margin-top: 14px;
       box-shadow: 0 4px 14px rgba(26, 40, 68, 0.06);
     }
+    .accordion {
+      padding: 0;
+      overflow: hidden;
+    }
+    .accordion > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 16px 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+    }
+    .accordion > summary::-webkit-details-marker { display: none; }
+    .accordion > summary::after {
+      content: "▾";
+      font-size: 1rem;
+      color: var(--muted);
+      transition: transform 0.2s ease;
+    }
+    .accordion[open] > summary::after { transform: rotate(180deg); }
+    .accordion-content {
+      padding: 0 18px 16px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+    }
+    .summary-text {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .summary-title {
+      font-size: 1.18rem;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .summary-sub {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 500;
+      line-height: 1.4;
+    }
     .table-wrap { overflow-x: auto; }
     table {
       border-collapse: collapse;
@@ -57,6 +101,9 @@
     th {
       background: #f3f6fb;
       font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 1;
     }
     td.file-id {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -65,7 +112,44 @@
       min-width: 210px;
       word-break: break-all;
     }
-    audio { width: 185px; height: 32px; }
+    .wave-player {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+      gap: 5px 8px;
+      align-items: center;
+      min-width: 220px;
+    }
+    .wp-btn {
+      grid-row: 1 / 3;
+      width: 52px;
+      height: 30px;
+      border: 1px solid #b8c6da;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffffff 0%, #eaf0f9 100%);
+      color: #1f4d82;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .wp-btn:hover { border-color: #8fa8c7; }
+    .wp-wave {
+      width: 100%;
+      height: 34px;
+      border: 1px solid #d6deea;
+      border-radius: 8px;
+      background: #f8fbff;
+      cursor: pointer;
+      display: block;
+    }
+    .wp-time {
+      grid-column: 2;
+      color: var(--muted);
+      font-size: 0.73rem;
+      text-align: right;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
     .small { font-size: 0.88rem; }
     .pill {
       display: inline-block;
@@ -77,10 +161,24 @@
       background: #eef4fd;
       margin-bottom: 4px;
     }
+    .type-tag {
+      display: inline-block;
+      border: 1px solid #bed0ea;
+      background: #edf4ff;
+      color: #20538b;
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .section-stack { margin-top: 14px; display: grid; gap: 10px; }
     @media (max-width: 900px) {
       h1 { font-size: 1.55rem; }
       .container { padding-top: 20px; }
-      audio { width: 170px; }
+      .wave-player { min-width: 190px; }
+      .summary-title { font-size: 1.02rem; }
     }
   </style>
 </head>
@@ -91,6 +189,9 @@
       <h1>Improving the Zero-Shot Voice Conversion Capability of RVQ-based Neural Audio Codecs</h1>
       <p class="muted">
         This page provides listening samples for reconstruction and zero-shot voice conversion.
+      </p>
+      <p class="small muted">
+        Note: Loading audio files and waveform previews may take some time, especially on first play. For the best experience, we recommend using Google Chrome.
       </p>
       <p>
         Current neural audio codecs, such as SpeechTokenizer, have demonstrated strong performance in speech reconstruction and
@@ -104,22 +205,29 @@
       </p>
     </header>
 
-    <section>
-      <h2>Speech Reconstruction</h2>
-      <p class="small muted">
-        Three code conditions are shown separately: <code>code1</code>, <code>code2_to_8</code>, and <code>codefull</code>.
-        Columns correspond to different systems for direct comparison.
-      </p>
-      <div id="recon-sections"></div>
-    </section>
+    <details class="card accordion" open>
+      <summary>
+        <span class="summary-text">
+          <span class="summary-title">Speech Reconstruction</span>
+          <span class="summary-sub">Expand to compare <code>code1</code>, <code>code2_to_8</code>, and <code>codefull</code>.</span>
+        </span>
+      </summary>
+      <div class="accordion-content">
+        <div id="recon-sections" class="section-stack"></div>
+      </div>
+    </details>
 
-    <section>
-      <h2>Zero-Shot Voice Conversion</h2>
-      <p class="small muted">
-        Each row contains one conversion pair in the form <code>vc_{src}_to_{tgt}</code>. Ground-truth source and target are included.
-      </p>
-      <div id="zsvc-section"></div>
-    </section>
+    <details class="card accordion" style="margin-top: 14px;">
+      <summary>
+        <span class="summary-text">
+          <span class="summary-title">Zero-Shot Voice Conversion</span>
+          <span class="summary-sub">Expand to compare source/target ground truth and all systems.</span>
+        </span>
+      </summary>
+      <div class="accordion-content">
+        <div id="zsvc-section"></div>
+      </div>
+    </details>
   </main>
 
   <script>
@@ -154,10 +262,11 @@
 
     function audioCell(path) {
       return `
-        <audio controls preload="none">
-          <source src="${path}" type="audio/wav">
-          Your browser does not support the audio element.
-        </audio>`;
+        <div class="wave-player" data-src="${path}">
+          <button class="wp-btn" type="button">Play</button>
+          <canvas class="wp-wave" width="156" height="34"></canvas>
+          <div class="wp-time">0:00 / --:--</div>
+        </div>`;
     }
 
     function reconDescription(type) {
@@ -172,29 +281,36 @@
 
     function renderReconstruction() {
       const host = document.getElementById("recon-sections");
-      reconTypes.forEach((type) => {
-        const card = document.createElement("div");
-        card.className = "card";
+      reconTypes.forEach((type, index) => {
+        const card = document.createElement("details");
+        card.className = "card accordion";
+        if (index === 0) card.open = true;
         card.innerHTML = `
-          <h3>${type}</h3>
-          <p class="small muted">${reconDescription(type)}</p>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Ground Truth</th>
-                  ${systems.map((s) => `<th>${s}</th>`).join("")}
-                </tr>
-              </thead>
-              <tbody>
-                ${reconUtterances.map((utt) => `
+          <summary>
+            <span class="summary-text">
+              <span class="summary-title"><span class="type-tag">${type}</span></span>
+              <span class="summary-sub">${reconDescription(type)}</span>
+            </span>
+          </summary>
+          <div class="accordion-content">
+            <div class="table-wrap">
+              <table>
+                <thead>
                   <tr>
-                    <td>${audioCell(`reconstruct/gt/${utt}`)}</td>
-                    ${systems.map((s) => `<td>${audioCell(`reconstruct/${s}/${type}/${utt}`)}</td>`).join("")}
+                    <th>Ground Truth</th>
+                    ${systems.map((s) => `<th>${s}</th>`).join("")}
                   </tr>
-                `).join("")}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  ${reconUtterances.map((utt) => `
+                    <tr>
+                      <td>${audioCell(`reconstruct/gt/${utt}`)}</td>
+                      ${systems.map((s) => `<td>${audioCell(`reconstruct/${s}/${type}/${utt}`)}</td>`).join("")}
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
           </div>
         `;
         host.appendChild(card);
@@ -204,7 +320,6 @@
     function renderZsvc() {
       const host = document.getElementById("zsvc-section");
       const card = document.createElement("div");
-      card.className = "card";
       card.innerHTML = `
         <div class="table-wrap">
           <table>
@@ -233,8 +348,157 @@
       host.appendChild(card);
     }
 
+    function fmtTime(sec) {
+      if (!Number.isFinite(sec)) return "--:--";
+      const s = Math.max(0, Math.floor(sec));
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return `${m}:${String(r).padStart(2, "0")}`;
+    }
+
+    function drawWave(canvas, peaks, progress) {
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      const mid = h / 2;
+      const step = w / peaks.length;
+      const barW = Math.max(1, step * 0.75);
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#f8fbff";
+      ctx.fillRect(0, 0, w, h);
+
+      for (let i = 0; i < peaks.length; i += 1) {
+        const amp = Math.max(1, peaks[i] * (h * 0.45));
+        const x = i * step;
+        const y = mid - amp / 2;
+        ctx.fillStyle = "#c3d0e0";
+        ctx.fillRect(x, y, barW, amp);
+      }
+
+      const pw = Math.max(0, Math.min(1, progress)) * w;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, pw, h);
+      ctx.clip();
+      for (let i = 0; i < peaks.length; i += 1) {
+        const amp = Math.max(1, peaks[i] * (h * 0.45));
+        const x = i * step;
+        const y = mid - amp / 2;
+        ctx.fillStyle = "#1f72c6";
+        ctx.fillRect(x, y, barW, amp);
+      }
+      ctx.restore();
+    }
+
+    async function buildPeaks(src, bins = 78) {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const buf = await fetch(src).then((r) => r.arrayBuffer());
+      const audioBuf = await ctx.decodeAudioData(buf.slice(0));
+      const data = audioBuf.getChannelData(0);
+      const block = Math.max(1, Math.floor(data.length / bins));
+      const peaks = new Array(bins).fill(0);
+
+      for (let i = 0; i < bins; i += 1) {
+        const start = i * block;
+        const end = Math.min(data.length, start + block);
+        let max = 0;
+        for (let j = start; j < end; j += 1) {
+          const v = Math.abs(data[j]);
+          if (v > max) max = v;
+        }
+        peaks[i] = max;
+      }
+      const scale = Math.max(...peaks, 1e-6);
+      const normalized = peaks.map((p) => p / scale);
+      await ctx.close();
+      return normalized;
+    }
+
+    function initWavePlayers() {
+      const players = Array.from(document.querySelectorAll(".wave-player"));
+      let active = null;
+
+      players.forEach((el) => {
+        const src = el.dataset.src;
+        const btn = el.querySelector(".wp-btn");
+        const canvas = el.querySelector(".wp-wave");
+        const time = el.querySelector(".wp-time");
+        const audio = new Audio(src);
+        audio.preload = "metadata";
+        let peaks = new Array(78).fill(0.05);
+        let waveReady = false;
+        let loading = false;
+
+        drawWave(canvas, peaks, 0);
+
+        function refresh() {
+          const cur = audio.currentTime || 0;
+          const dur = audio.duration || NaN;
+          const prog = Number.isFinite(dur) && dur > 0 ? cur / dur : 0;
+          time.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
+          drawWave(canvas, peaks, prog);
+        }
+
+        async function ensureWave() {
+          if (waveReady || loading) return;
+          loading = true;
+          btn.textContent = "Load";
+          try {
+            peaks = await buildPeaks(src);
+            waveReady = true;
+          } catch (err) {
+            peaks = new Array(78).fill(0.08);
+          } finally {
+            loading = false;
+            btn.textContent = audio.paused ? "Play" : "Pause";
+            refresh();
+          }
+        }
+
+        btn.addEventListener("click", async () => {
+          if (active && active !== audio) {
+            active.pause();
+          }
+          await ensureWave();
+          if (audio.paused) {
+            await audio.play();
+            active = audio;
+          } else {
+            audio.pause();
+          }
+        });
+
+        canvas.addEventListener("click", (e) => {
+          if (!Number.isFinite(audio.duration) || audio.duration <= 0) return;
+          const rect = canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const ratio = Math.max(0, Math.min(1, x / rect.width));
+          audio.currentTime = ratio * audio.duration;
+          refresh();
+        });
+
+        audio.addEventListener("timeupdate", refresh);
+        audio.addEventListener("loadedmetadata", refresh);
+        audio.addEventListener("pause", () => {
+          btn.textContent = "Play";
+          refresh();
+        });
+        audio.addEventListener("play", () => {
+          btn.textContent = "Pause";
+          refresh();
+        });
+        audio.addEventListener("ended", () => {
+          btn.textContent = "Play";
+          audio.currentTime = 0;
+          refresh();
+        });
+      });
+    }
+
     renderReconstruction();
     renderZsvc();
+    initWavePlayers();
   </script>
 </body>
 </html>
