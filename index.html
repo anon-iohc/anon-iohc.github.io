@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anonymous Audio Samples</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1e2430;
+      --muted: #5f6b7a;
+      --line: #d7dce5;
+      --accent: #1565c0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
+      color: var(--text);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 16px 48px;
+    }
+    h1, h2, h3 { margin: 0 0 12px; line-height: 1.25; }
+    h1 { font-size: 1.9rem; }
+    h2 { font-size: 1.45rem; margin-top: 28px; }
+    h3 { font-size: 1.15rem; margin-top: 20px; color: var(--accent); }
+    p { margin: 8px 0 0; line-height: 1.6; color: var(--text); }
+    .muted { color: var(--muted); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      margin-top: 14px;
+      box-shadow: 0 4px 14px rgba(26, 40, 68, 0.06);
+    }
+    .table-wrap { overflow-x: auto; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 980px;
+      margin-top: 10px;
+      background: #fff;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 0.92rem;
+    }
+    th {
+      background: #f3f6fb;
+      font-weight: 700;
+    }
+    td.file-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+      text-align: left;
+      min-width: 210px;
+      word-break: break-all;
+    }
+    audio { width: 185px; height: 32px; }
+    .small { font-size: 0.88rem; }
+    .pill {
+      display: inline-block;
+      border: 1px solid #c8d6ea;
+      color: #244f80;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 0.8rem;
+      background: #eef4fd;
+      margin-bottom: 4px;
+    }
+    @media (max-width: 900px) {
+      h1 { font-size: 1.55rem; }
+      .container { padding-top: 20px; }
+      audio { width: 170px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="card">
+      <div class="pill">Anonymous Submission</div>
+      <h1>Improving the Zero-Shot Voice Conversion Capability of RVQ-based Neural Audio Codecs</h1>
+      <p class="muted">
+        This page provides listening samples for reconstruction and zero-shot voice conversion.
+      </p>
+      <p>
+        Current neural audio codecs, such as SpeechTokenizer, have demonstrated strong performance in speech reconstruction and
+        feature disentanglement. However, their application to zero-shot voice conversion remains challenging due to the persistent
+        entanglement of speaker identity and linguistic content. In this paper, we propose a novel audio codec designed to explicitly
+        decouple speaker identities from semantic content. Our approach introduces two synergistic strategies: (i) a neural VC-based
+        data augmentation scheme with cross-reconstruction objectives, and (ii) novel temporal residual shuffling that disrupts sequential
+        dependencies to enforce the aggregation of global timbre characteristics. Our model achieves a 37.4% relative reduction in WER
+        over the baseline, while maintaining high-fidelity reconstruction quality. Subjective tests further confirm that our method is
+        significantly preferred, underscoring the efficacy of temporal disruption for robust disentanglement in codec training.
+      </p>
+    </header>
+
+    <section>
+      <h2>Speech Reconstruction</h2>
+      <p class="small muted">
+        Three code conditions are shown separately: <code>code1</code>, <code>code2_to_8</code>, and <code>codefull</code>.
+        Columns correspond to different systems for direct comparison.
+      </p>
+      <div id="recon-sections"></div>
+    </section>
+
+    <section>
+      <h2>Zero-Shot Voice Conversion</h2>
+      <p class="small muted">
+        Each row contains one conversion pair in the form <code>vc_{src}_to_{tgt}</code>. Ground-truth source and target are included.
+      </p>
+      <div id="zsvc-section"></div>
+    </section>
+  </main>
+
+  <script>
+    const systems = ["SpeechTokenizer", "woAug", "woTRS", "Proposed"];
+    const reconTypes = ["code1", "code2_to_8", "codefull"];
+
+    const reconUtterances = [
+      "1686_142278_000049_000004.wav",
+      "2277_149897_000040_000009.wav",
+      "251_136532_000015_000000.wav",
+      "2803_154320_000006_000000.wav",
+      "2803_161169_000004_000004.wav",
+      "5536_43363_000001_000002.wav",
+      "5895_34615_000014_000000.wav",
+      "6241_61943_000015_000001.wav",
+      "8297_275155_000044_000000.wav",
+      "8842_302201_000014_000010.wav"
+    ];
+
+    const zsvcPairs = [
+      ["p232_232", "p272_218"],
+      ["p255_182", "p234_294"],
+      ["p270_283", "p293_219"],
+      ["p281_445", "p334_020"],
+      ["p284_150", "p268_172"],
+      ["p301_238", "p303_086"],
+      ["p302_008", "p273_090"],
+      ["p304_121", "p269_367"],
+      ["p333_143", "p281_375"],
+      ["p333_414", "p251_218"]
+    ];
+
+    function audioCell(path) {
+      return `
+        <audio controls preload="none">
+          <source src="${path}" type="audio/wav">
+          Your browser does not support the audio element.
+        </audio>`;
+    }
+
+    function reconDescription(type) {
+      if (type === "code1") {
+        return "Reconstruction using only the first codebook layer (code 1), which mainly reflects high-level content information.";
+      }
+      if (type === "code2_to_8") {
+        return "Reconstruction using codebook layers 2 through 8, highlighting complementary details beyond the first layer.";
+      }
+      return "Reconstruction using all codebook layers, corresponding to full-codec synthesis quality.";
+    }
+
+    function renderReconstruction() {
+      const host = document.getElementById("recon-sections");
+      reconTypes.forEach((type) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${type}</h3>
+          <p class="small muted">${reconDescription(type)}</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ground Truth</th>
+                  ${systems.map((s) => `<th>${s}</th>`).join("")}
+                </tr>
+              </thead>
+              <tbody>
+                ${reconUtterances.map((utt) => `
+                  <tr>
+                    <td>${audioCell(`reconstruct/gt/${utt}`)}</td>
+                    ${systems.map((s) => `<td>${audioCell(`reconstruct/${s}/${type}/${utt}`)}</td>`).join("")}
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+        host.appendChild(card);
+      });
+    }
+
+    function renderZsvc() {
+      const host = document.getElementById("zsvc-section");
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Source GT</th>
+                <th>Target GT</th>
+                ${systems.map((s) => `<th>${s}</th>`).join("")}
+              </tr>
+            </thead>
+            <tbody>
+              ${zsvcPairs.map(([src, tgt]) => {
+                const vcName = `vc_${src}_to_${tgt}.wav`;
+                return `
+                  <tr>
+                    <td>${audioCell(`zsvc/gt/${src}.wav`)}</td>
+                    <td>${audioCell(`zsvc/gt/${tgt}.wav`)}</td>
+                    ${systems.map((s) => `<td>${audioCell(`zsvc/${s}/${vcName}`)}</td>`).join("")}
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+      host.appendChild(card);
+    }
+
+    renderReconstruction();
+    renderZsvc();
+  </script>
+</body>
+</html>
