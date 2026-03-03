@@ -105,6 +105,16 @@
       top: 0;
       z-index: 1;
     }
+    th.proposed-col {
+      background: #e8f4ff;
+      color: #0e4e8f;
+      box-shadow: inset 0 -2px 0 #3f8fd5;
+    }
+    td.proposed-col {
+      background: #f4faff;
+      border-left: 2px solid #b7d8f6;
+      border-right: 2px solid #b7d8f6;
+    }
     td.file-id {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 0.8rem;
@@ -231,7 +241,7 @@
   </main>
 
   <script>
-    const systems = ["SpeechTokenizer", "woAug", "woTRS", "Proposed"];
+    const systems = ["SpeechTokenizer", "Proposed", "woAug", "woTRS"];
     const reconTypes = ["code1", "code2_to_8", "codefull"];
 
     const reconUtterances = [
@@ -298,14 +308,14 @@
                 <thead>
                   <tr>
                     <th>Ground Truth</th>
-                    ${systems.map((s) => `<th>${s}</th>`).join("")}
+                    ${systems.map((s) => `<th class="${s === "Proposed" ? "proposed-col" : ""}">${s}</th>`).join("")}
                   </tr>
                 </thead>
                 <tbody>
                   ${reconUtterances.map((utt) => `
                     <tr>
                       <td>${audioCell(`reconstruct/gt/${utt}`)}</td>
-                      ${systems.map((s) => `<td>${audioCell(`reconstruct/${s}/${type}/${utt}`)}</td>`).join("")}
+                      ${systems.map((s) => `<td class="${s === "Proposed" ? "proposed-col" : ""}">${audioCell(`reconstruct/${s}/${type}/${utt}`)}</td>`).join("")}
                     </tr>
                   `).join("")}
                 </tbody>
@@ -327,7 +337,7 @@
               <tr>
                 <th>Source GT</th>
                 <th>Target GT</th>
-                ${systems.map((s) => `<th>${s}</th>`).join("")}
+                ${systems.map((s) => `<th class="${s === "Proposed" ? "proposed-col" : ""}">${s}</th>`).join("")}
               </tr>
             </thead>
             <tbody>
@@ -337,7 +347,7 @@
                   <tr>
                     <td>${audioCell(`zsvc/gt/${src}.wav`)}</td>
                     <td>${audioCell(`zsvc/gt/${tgt}.wav`)}</td>
-                    ${systems.map((s) => `<td>${audioCell(`zsvc/${s}/${vcName}`)}</td>`).join("")}
+                    ${systems.map((s) => `<td class="${s === "Proposed" ? "proposed-col" : ""}">${audioCell(`zsvc/${s}/${vcName}`)}</td>`).join("")}
                   </tr>
                 `;
               }).join("")}
